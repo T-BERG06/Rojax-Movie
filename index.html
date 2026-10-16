@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0a14" />
+<title>ROJAX MOVIE — Ultimate</title>
+<link rel="manifest" href="manifest.json" />
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, updateDoc, query, where, onSnapshot, serverTimestamp, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ==== FIREBASE CONFIG ====
+const firebaseConfig = {
+  apiKey: "AIzaSyDvIXdC3LwfkdgfZLoU1007JI7Qfm5EBpU",
+  authDomain: "rojax-movie.firebaseapp.com",
+  projectId: "rojax-movie",
+  storageBucket: "rojax-movie.firebasestorage.app",
+  messagingSenderId: "436815422435",
+  appId: "1:436815422435:web:233f0796da9d10ef88f6d6",
+  measurementId: "G-XG1700B9C4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ==== R2 & ADMIN ====
+const R2_URL = "https://pub-1e50189534b34341a52e7cf5d51df344.r2.dev";
+const ADMIN_EMAIL = "Rojaxomary97@gmail.com";
+
+window.rojaxFns = {
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
+  collection, doc, getDocs, addDoc, deleteDoc, updateDoc, query, where, onSnapshot, serverTimestamp, setDoc, getDoc
+};
+window.rojaxAuth = auth;
+window.rojaxDb = db;
+window.rojaxReady = true;
+window.dispatchEvent(new Event("rojax-firebase-ready"));
+</script>
+<style>
+:root {
+  --rojax-dark: #0a0a14;
+  --rojax-deep: #12122b;
+  --rojax-purple: #6a0dad;
+  --rojax-pink: #ff2e88;
+  --rojax-gold: #ffd700;
+  --rojax-text: #f0f0ff;
+  --rojax-card: rgba(255, 255, 255, 0.05);
+  --rojax-border: rgba(106, 13, 173, 0.3);
+}
+body.light {
+  --rojax-dark: #f5f5ff;
+  --rojax-deep: #ffffff;
+  --rojax-text: #1a1a2e;
+  --rojax-card: rgba(0, 0, 0, 0.04);
+  --rojax-border: rgba(106, 13, 173, 0.2);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+body {
+  background: linear-gradient(135deg, var(--rojax-dark) 0%, var(--rojax-deep) 50%, var(--rojax-dark) 100%);
+  color: var(--rojax-text); min-height: 100vh;
+  transition: background 0.4s, color 0.4s; overflow-x: hidden;
+}
+.rojax-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px; background: var(--rojax-deep);
+  backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 1000;
+  border-bottom: 2px solid var(--rojax-purple);
+  flex-wrap: wrap; gap: 8px;
+}
+.logo h1 { font-size: 20px; color: var(--rojax-gold); letter-spacing: 1px; }
+.logo h1 span { color: var(--rojax-pink); }
+nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+nav a { color: var(--rojax-text); text-decoration: none; font-weight: 500; cursor: pointer; font-size: 13px; }
+nav a:hover { color: var(--rojax-pink); }
+#search {
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid var(--rojax-purple);
+  background: var(--rojax-card); color: var(--rojax-text); outline: none;
+  width: 160px; font-size: 13px;
+}
+.btn-icon {
+  background: var(--rojax-card); border: 1px solid var(--rojax-purple);
+  color: var(--rojax-text); padding: 6px 11px; border-radius: 20px;
+  cursor: pointer; font-size: 12px;
+}
+.btn-icon:hover { background: var(--rojax-purple); color: white; }
+.hero {
+  min-height: 320px; display: flex; align-items: center; justify-content: center;
+  text-align: center; background: radial-gradient(circle at center, rgba(106, 13, 173, 0.4), transparent 70%);
+  padding: 30px 20px;
+}
+.hero-content h2 { font-size: 32px; color: var(--rojax-gold); text-shadow: 0 0 20px var(--rojax-purple); margin-bottom: 12px; }
+.hero-content p { font-size: 14px; margin-bottom: 20px; color: #aaa; }
+.hero-content button {
+  padding: 12px 30px; font-size: 15px;
+  background: linear-gradient(90deg, var(--rojax-purple), var(--rojax-pink));
+  color: white; border: none; border-radius: 30px; cursor: pointer;
+}
+.section { padding: 30px 20px; }
+.section-title { font-size: 22px; margin-bottom: 18px; color: var(--rojax-gold); border-left: 5px solid var(--rojax-pink); padding-left: 12px; }
+.movie-grid, .live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.movie-card {
+  background: var(--rojax-card); border-radius: 12px; overflow: hidden;
+  cursor: pointer; transition: transform 0.3s; border: 1px solid var(--rojax-border); position: relative;
+}
+.movie-card:hover { transform: translateY(-6px); box-shadow: 0 8px 25px rgba(255, 46, 136, 0.5); }
+.movie-card img { width: 100%; height: 220px; object-fit: cover; display: block; }
+.movie-card .info { padding: 9px; }
+.movie-card .info h4 { font-size: 13px; margin-bottom: 4px; }
+.movie-card .info p { font-size: 11px; color: #999; }
+.rating-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: var(--rojax-gold); padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+.new-badge { position: absolute; background: var(--rojax-pink); color: white; padding: 3px 8px; font-size: 10px; border-radius: 5px; margin: 8px; font-weight: bold; z-index: 2; top: 0; left: 0; }
+.fav-btn { position: absolute; bottom: 55px; right: 8px; background: rgba(0,0,0,0.7); color: var(--rojax-pink); border: none; padding: 6px 9px; border-radius: 50%; cursor: pointer; font-size: 14px; z-index: 3; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.filter-bar button, .filter-bar select {
+  padding: 7px 15px; border-radius: 20px;
+  border: 1px solid var(--rojax-purple);
+  background: transparent; color: var(--rojax-text); cursor: pointer; font-size: 12px;
+}
+.filter-bar button.active { background: var(--rojax-purple); color: white; }
+.modal {
+  display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95);
+  z-index: 2000; justify-content: center; align-items: center;
+  overflow-y: auto; padding: 15px;
+}
+.modal.active { display: flex; }
+.modal-content {
+  width: 100%; max-width: 1000px;
+  background: var(--rojax-deep); border-radius: 15px;
+  padding: 18px; position: relative; border: 2px solid var(--rojax-purple);
+}
+.close { position: absolute; top: 8px; right: 15px; font-size: 28px; color: var(--rojax-pink); cursor: pointer; z-index: 5; }
+#videoPlayer { width: 100%; border-radius: 10px; background: black; max-height: 70vh; }
+.player-info { margin-top: 12px; }
+.quality-selector { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.quality-selector select, .quality-selector button {
+  padding: 7px 13px; border-radius: 8px;
+  border: 1px solid var(--rojax-purple);
+  background: var(--rojax-dark); color: var(--rojax-text); cursor: pointer; font-size: 12px;
+}
+.quality-selector button { background: var(--rojax-pink); border: none; color: white; }
+.tabs { display: flex; gap: 6px; margin: 12px 0; flex-wrap: wrap; }
+.tabs button {
+  padding: 7px 15px; border-radius: 8px 8px 0 0;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--rojax-text); cursor: pointer; font-size: 13px;
+}
+.tabs button.active { border-bottom-color: var(--rojax-pink); color: var(--rojax-pink); font-weight: bold; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.stars span { cursor: pointer; font-size: 24px; color: #555; }
+.stars span.active { color: var(--rojax-gold); }
+.comment-box { background: var(--rojax-card); padding: 10px 13px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--rojax-purple); }
+.comment-box .meta { font-size: 11px; color: #888; margin-bottom: 4px; }
+.comment-input { display: flex; gap: 8px; margin-top: 10px; }
+.comment-input input { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--rojax-purple); background: var(--rojax-dark); color: var(--rojax-text); font-size: 13px; }
+.comment-input button { padding: 9px 18px; border-radius: 8px; border: none; background: var(--rojax-pink); color: white; cursor: pointer; font-size: 13px; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; margin-bottom: 4px; font-size: 12px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 9px; border-radius: 8px;
+  border: 1px solid var(--rojax-purple);
+  background: var(--rojax-dark); color: var(--rojax-text); outline: none; font-size: 13px;
+}
+.auth-btn {
+  width: 100%; padding: 11px; border-radius: 8px; border: none;
+  background: linear-gradient(90deg, var(--rojax-purple), var(--rojax-pink));
+  color: white; font-size: 15px; cursor: pointer; margin-top: 10px;
+}
+.rojax-footer { text-align: center; padding: 22px; background: rgba(0, 0, 0, 0.3); border-top: 2px solid var(--rojax-purple); color: #888; font-size: 12px; }
+.toast {
+  position: fixed; bottom: 25px; right: 20px; left: 20px;
+  background: var(--rojax-purple); color: white;
+  padding: 12px 18px; border-radius: 8px;
+  opacity: 0; transition: opacity 0.3s; z-index: 5000; text-align: center; font-size: 13px;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.hint { font-size: 11px; color: #888; margin-top: 4px; display: block; }
+@media (max-width: 600px) {
+  .hero-content h2 { font-size: 24px; }
+  nav a { font-size: 12px; }
+  #search { width: 120px; }
+}
+</style>
+</head>
+<body>
+
+<header class="rojax-header">
+  <div class="logo"><h1>ROJAX <span>MOVIE</span></h1></div>
+  <nav>
+    <a onclick="scrollToId('home')">Nyumbani</a>
+    <a onclick="scrollToId('movies')">Movies</a>
+    <a onclick="scrollToId('tamthiliya')">Tamthiliya</a>
+    <a onclick="scrollToId('live')">Live</a>
+    <a onclick="scrollToId('watchlist')">⭐</a>
+    <input type="text" id="search" placeholder="Tafuta..." />
+    <button class="btn-icon" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="btn-icon" id="authBtn" onclick="openAuth()">Ingia</button>
+    <button class="btn-icon" id="adminBtn" onclick="openAdmin()" style="display:none">⚙️</button>
+  </nav>
+</header>
+
+<section id="home" class="hero">
+  <div class="hero-content">
+    <h2>Karibu ROJAX MOVIE</h2>
+    <p>Tamthiliya • Live Cinema • Movies za Dunia kwa 8K</p>
+    <button onclick="scrollToId('movies')">Anza Kutazama</button>
+  </div>
+</section>
+
+<section id="live" class="section">
+  <h2 class="section-title">🔴 Live Cinema</h2>
+  <div class="live-grid" id="liveGrid"></div>
+</section>
+
+<section id="tamthiliya" class="section">
+  <h2 class="section-title">🎭 Tamthiliya za Kibongo</h2>
+  <div class="movie-grid" id="tamthiliyaGrid"></div>
+</section>
+
+<section id="watchlist" class="section">
+  <h2 class="section-title">⭐ Watchlist Yangu</h2>
+  <div class="movie-grid" id="watchlistGrid"></div>
+</section>
+
+<section id="movies" class="section">
+  <h2 class="section-title">🎬 Movies Zote</h2>
+  <div class="filter-bar">
+    <button onclick="filterMovies('all', this)" class="active">Zote</button>
+    <button onclick="filterMovies('new', this)">Mpya</button>
+    <button onclick="filterMovies('action', this)">Action</button>
+    <button onclick="filterMovies('drama', this)">Drama</button>
+    <button onclick="filterMovies('comedy', this)">Comedy</button>
+    <button onclick="filterMovies('horror', this)">Horror</button>
+    <button onclick="filterMovies('scifi', this)">Sci-Fi</button>
+    <button onclick="filterMovies('documentary', this)">Documentary</button>
+    <select id="yearFilter" onchange="applyAdvancedFilter()">
+      <option value="">Mwaka wote</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+    </select>
+    <select id="ratingFilter" onchange="applyAdvancedFilter()">
+      <option value="0">Rating yote</option>
+      <option value="8">8+ ⭐</option>
+      <option value="7">7+ ⭐</option>
+      <option value="6">6+ ⭐</option>
+    </select>
+  </div>
+  <div class="movie-grid" id="movieGrid"></div>
+</section>
+
+<div id="playerModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closePlayer()">&times;</span>
+    <video id="videoPlayer" controls playsinline></video>
+    <div class="player-info">
+      <h3 id="playerTitle"></h3>
+      <div class="quality-selector">
+        <label>Quality:</label>
+        <select id="qualitySelect">
+          <option value="480">480p</option>
+          <option value="720">720p</option>
+          <option value="1080" selected>1080p</option>
+          <option value="2160">4K</option>
+          <option value="4320">8K</option>
+        </select>
+        <button onclick="downloadMovie()">⬇ Download</button>
+        <button onclick="toggleFavCurrent()" id="favCurrentBtn">⭐ Watchlist</button>
+      </div>
+      <div class="tabs">
+        <button class="active" onclick="switchTab('rating', this)">⭐ Rating</button>
+        <button onclick="switchTab('comments', this)">💬 Comments</button>
+      </div>
+      <div id="ratingTab" class="tab-content active">
+        <div class="stars" id="stars">
+          <span onclick="rate(1)">★</span>
+          <span onclick="rate(2)">★</span>
+          <span onclick="rate(3)">★</span>
+          <span onclick="rate(4)">★</span>
+          <span onclick="rate(5)">★</span>
+        </div>
+        <p id="ratingText" style="margin-top:8px;font-size:12px;color:#aaa"></p>
+      </div>
+      <div id="commentsTab" class="tab-content">
+        <div id="commentsList"></div>
+        <div class="comment-input">
+          <input type="text" id="commentInput" placeholder="Andika comment..." />
+          <button onclick="addComment()">Tuma</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="authModal" class="modal">
+  <div class="modal-content" style="max-width:400px">
+    <span class="close" onclick="closeAuth()">&times;</span>
+    <h3 id="authTitle" style="margin-bottom:18px;color:var(--rojax-gold)">Ingia</h3>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="jina@email.com" />
+    </div>
+    <div class="form-group" id="usernameGroup" style="display:none">
+      <label>Username</label>
+      <input type="text" id="authUser" placeholder="Jina lako" />
+    </div>
+    <div class="form-group">
+      <label>Password (min 6)</label>
+      <input type="password" id="authPass" placeholder="******" />
+    </div>
+    <button class="auth-btn" onclick="doAuth()" id="authSubmit">Ingia</button>
+    <p style="text-align:center;margin-top:14px;font-size:12px;cursor:pointer;color:var(--rojax-pink)" onclick="toggleAuthMode()" id="authToggle">
+      Huna account? Jisajili
+    </p>
+  </div>
+</div>
+
+<div id="adminModal" class="modal">
+  <div class="modal-content" style="max-width:600px">
+    <span class="close" onclick="closeAdmin()">&times;</span>
+    <h3 style="margin-bottom:16px;color:var(--rojax-gold)">⚙️ Admin Panel</h3>
+    <div class="tabs">
+      <button class="active" onclick="switchAdminTab('movie', this)">Movie</button>
+      <button onclick="switchAdminTab('live', this)">Live Stream</button>
+    </div>
+    <div id="adminMovieTab" class="tab-content active">
+      <div class="form-group"><label>Title</label><input type="text" id="admTitle" /></div>
+      <div class="form-group"><label>Type</label>
+        <select id="admType"><option value="movie">Movie</option><option value="tamthiliya">Tamthiliya</option></select>
+      </div>
+      <div class="form-group"><label>Year</label><input type="number" id="admYear" value="2025" /></div>
+      <div class="form-group"><label>Genre</label>
+        <select id="admGenre">
+          <option value="action">Action</option><option value="drama">Drama</option>
+          <option value="comedy">Comedy</option><option value="horror">Horror</option>
+          <option value="scifi">Sci-Fi</option><option value="documentary">Documentary</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Poster URL (R2 au nyingine)</label>
+        <input type="text" id="admPoster" placeholder="https://pub-1e50189534b34341a52e7cf5d51df344.r2.dev/posters/..." />
+        <span class="hint">Upload picha kwenye R2 → Copy link → paste hapa</span>
+      </div>
+      <div class="form-group">
+        <label>Video URL (.mp4 au .m3u8)</label>
+        <input type="text" id="admVideo" placeholder="https://pub-1e50189534b34341a52e7cf5d51df344.r2.dev/videos/..." />
+        <span class="hint">Upload video kwenye R2 → Copy link → paste hapa</span>
+      </div>
+      <div class="form-group"><label>Download URL (optional)</label><input type="text" id="admDownload" /></div>
+      <div class="form-group"><label><input type="checkbox" id="admIsNew" /> Movie Mpya</label></div>
+      <button class="auth-btn" onclick="addMovieAdmin()">➕ Ongeza Movie</button>
+      <h4 style="margin:20px 0 10px;color:var(--rojax-gold)">Movies Zilizopo</h4>
+      <div id="adminMovieList" style="max-height:200px;overflow-y:auto"></div>
+    </div>
+    <div id="adminLiveTab" class="tab-content">
+      <div class="form-group"><label>Title</label><input type="text" id="admLiveTitle" /></div>
+      <div class="form-group"><label>Live URL (.m3u8)</label><input type="text" id="admLiveChannel" /></div>
+      <div class="form-group"><label>Thumbnail URL</label><input type="text" id="admLiveThumb" /></div>
+      <button class="auth-btn" onclick="addLiveAdmin()">➕ Ongeza Live</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer class="rojax-footer">
+  <p>&copy; 2025 ROJAX MOVIE — Built by **JAPHET%</p>
+  <p style="margin-top:8px;font-size:11px">Content ni mali ya wamiliki wake. Tunaunganisha tu.</p>
+</footer>
+
+<script>
+let ROJAX_MOVIES = [];
+let ROJAX_LIVE = [];
+let CURRENT_USER = null;
+let CURRENT_UID = null;
+let CURRENT_NAME = null;
+let FAVORITES = [];
+let COMMENTS = {};
+let RATINGS = {};
+let currentMovie = null;
+let currentGenre = "all";
+let authMode = "login";
+let hlsInstance = null;
+let fb = null;
+
+window.addEventListener("rojax-firebase-ready", async () => {
+  fb = window.rojaxFns;
+  const auth = window.rojaxAuth;
+  fb.onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      CURRENT_USER = user.email;
+      CURRENT_UID = user.uid;
+      CURRENT_NAME = user.displayName || user.email.split("@")[0];
+      await loadFavorites(user.uid);
+      updateAuthUI();
+    } else {
+      CURRENT_USER = null; CURRENT_UID = null; CURRENT_NAME = null; FAVORITES = [];
+      updateAuthUI();
+    }
+    renderWatchlist();
+  });
+  await loadFromFirestore();
+  renderAll();
+});
+
+async function loadFromFirestore() {
+  const db = window.rojaxDb;
+  try {
+    const movSnap = await fb.getDocs(fb.collection(db, "movies"));
+    ROJAX_MOVIES = [];
+    movSnap.forEach(d => ROJAX_MOVIES.push({ id: d.id, ...d.data() }));
+
+    const liveSnap = await fb.getDocs(fb.collection(db, "live"));
+    ROJAX_LIVE = [];
+    liveSnap.forEach(d => ROJAX_LIVE.push({ id: d.id, ...d.data() }));
+
+    const comSnap = await fb.getDocs(fb.collection(db, "comments"));
+    COMMENTS = {};
+    comSnap.forEach(d => {
+      const c = d.data();
+      if (!COMMENTS[c.movieId]) COMMENTS[c.movieId] = [];
+      COMMENTS[c.movieId].push({ id: d.id, ...c });
+    });
+
+    const ratSnap = await fb.getDocs(fb.collection(db, "ratings"));
+    RATINGS = {};
+    ratSnap.forEach(d => {
+      const r = d.data();
+      if (!RATINGS[r.movieId]) RATINGS[r.movieId] = [];
+      RATINGS[r.movieId].push({ id: d.id, ...r });
+    });
+  } catch (e) {
+    console.error("Firestore load error:", e);
+    toast("Tatizo la mtandao");
+  }
+}
+
+async function loadFavorites(uid) {
+  try {
+    const snap = await fb.getDoc(fb.doc(window.rojaxDb, "watchlists", uid));
+    FAVORITES = snap.exists() ? (snap.data().ids || []) : [];
+  } catch { FAVORITES = []; }
+}
+
+async function saveFavorites() {
+  if (!CURRENT_UID) return;
+  await fb.setDoc(fb.doc(window.rojaxDb, "watchlists", CURRENT_UID), { ids: FAVORITES });
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("light");
+  const isLight = document.body.classList.contains("light");
+  document.getElementById("themeBtn").textContent = isLight ? "☀️" : "🌙";
+  localStorage.setItem("rojax_theme", isLight ? "light" : "dark");
+}
+if (localStorage.getItem("rojax_theme") === "light") {
+  document.body.classList.add("light");
+  document.getElementById("themeBtn").textContent = "☀️";
+}
+
+function openAuth() {
+  if (CURRENT_USER) {
+    if (confirm("Toka kwenye account?")) fb.signOut(window.rojaxAuth).then(() => toast("Umetoka"));
+    return;
+  }
+  document.getElementById("authModal").classList.add("active");
+}
+function closeAuth() { document.getElementById("authModal").classList.remove("active"); }
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "signup" : "login";
+  document.getElementById("authTitle").textContent = authMode === "login" ? "Ingia" : "Jisajili";
+  document.getElementById("authSubmit").textContent = authMode === "login" ? "Ingia" : "Jisajili";
+  document.getElementById("authToggle").textContent = authMode === "login" ? "Huna account? Jisajili" : "Una account? Ingia";
+  document.getElementById("usernameGroup").style.display = authMode === "signup" ? "block" : "none";
+}
+async function doAuth() {
+  const email = document.getElementById("authEmail").value.trim();
+  const pass = document.getElementById("authPass").value.trim();
+  const user = document.getElementById("authUser").value.trim();
+  if (!email || !pass) return toast("Weka email na password");
+  if (pass.length < 6) return toast("Password iwe herufi 6+");
+  try {
+    if (authMode === "signup") {
+      if (!user) return toast("Weka username");
+      const cred = await fb.createUserWithEmailAndPassword(window.rojaxAuth, email, pass);
+      await fb.updateProfile(cred.user, { displayName: user });
+      toast("Umejisajili!");
+    } else {
+      await fb.signInWithEmailAndPassword(window.rojaxAuth, email, pass);
+      toast("Karibu!");
+    }
+    closeAuth();
+  } catch (e) {
+    toast(e.message.replace("Firebase: ", ""));
+  }
+}
+function updateAuthUI() {
+  const btn = document.getElementById("authBtn");
+  const adminBtn = document.getElementById("adminBtn");
+  if (CURRENT_USER) {
+    btn.textContent = "👤 " + CURRENT_NAME;
+    adminBtn.style.display = CURRENT_USER === ADMIN_EMAIL ? "inline-block" : "none";
+  } else {
+    btn.textContent = "Ingia";
+    adminBtn.style.display = "none";
+  }
+}
+
+function openAdmin() {
+  if (CURRENT_USER !== ADMIN_EMAIL) return toast("Si admin");
+  document.getElementById("adminModal").classList.add("active");
+  renderAdminList();
+}
+function closeAdmin() { document.getElementById("adminModal").classList.remove("active"); }
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll("#adminModal .tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll("#adminModal .tab-content").forEach(c => c.classList.remove("active"));
+  document.getElementById("admin" + (tab === "movie" ? "Movie" : "Live") + "Tab").classList.add("active");
+}
+
+async function addMovieAdmin() {
+  if (CURRENT_USER !== ADMIN_EMAIL) return toast("Si admin");
+  const title = document.getElementById("admTitle").value.trim();
+  const videoUrl = document.getElementById("admVideo").value.trim();
+  const posterUrl = document.getElementById("admPoster").value.trim();
+  if (!title || !videoUrl) return toast("Weka title na video URL");
+  try {
+    const m = {
+      title, type: document.getElementById("admType").value,
+      year: parseInt(document.getElementById("admYear").value),
+      genre: document.getElementById("admGenre").value,
+      poster: posterUrl || "https://via.placeholder.com/300x450/12122b/ffffff?text=ROJAX",
+      video: videoUrl,
+      download: document.getElementById("admDownload").value.trim() || videoUrl,
+      isNew: document.getElementById("admIsNew").checked,
+      rating: 0,
+      createdAt: fb.serverTimestamp()
+    };
+    await fb.addDoc(fb.collection(window.rojaxDb, "movies"), m);
+    toast("Movie imeongezwa");
+    document.getElementById("admTitle").value = "";
+    document.getElementById("admVideo").value = "";
+    document.getElementById("admPoster").value = "";
+    document.getElementById("admDownload").value = "";
+    document.getElementById("admIsNew").checked = false;
+    await loadFromFirestore(); renderAll(); renderAdminList();
+  } catch (e) { toast("Error: " + e.message); }
+}
+
+async function addLiveAdmin() {
+  if (CURRENT_USER !== ADMIN_EMAIL) return toast("Si admin");
+  const title = document.getElementById("admLiveTitle").value.trim();
+  const channel = document.getElementById("admLiveChannel").value.trim();
+  if (!title || !channel) return toast("Weka title na URL");
+  try {
+    await fb.addDoc(fb.collection(window.rojaxDb, "live"), {
+      title, channel,
+      thumbnail: document.getElementById("admLiveThumb").value.trim() || "https://via.placeholder.com/400x225/6a0dad/ffffff?text=Live"
+    });
+    toast("Live imeongezwa");
+    document.getElementById("admLiveTitle").value = "";
+    document.getElementById("admLiveChannel").value = "";
+    document.getElementById("admLiveThumb").value = "";
+    await loadFromFirestore(); renderAll();
+  } catch (e) { toast("Error: " + e.message); }
+}
+
+function renderAdminList() {
+  const c = document.getElementById("adminMovieList");
+  c.innerHTML = "";
+  ROJAX_MOVIES.forEach(m => {
+    const div = document.createElement("div");
+    div.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px;background:var(--rojax-card);margin-bottom:5px;border-radius:6px;font-size:12px";
+    div.innerHTML = `<span>${m.title} (${m.year})</span><button onclick="deleteMovie('${m.id}')" style="background:#ff2e88;color:white;border:none;padding:4px 10px;border-radius:5px;cursor:pointer">Futa</button>`;
+    c.appendChild(div);
+  });
+}
+
+async function deleteMovie(id) {
+  if (!confirm("Futa movie hii?")) return;
+  try {
+    await fb.deleteDoc(fb.doc(window.rojaxDb, "movies", id));
+    toast("Imefutwa");
+    await loadFromFirestore(); renderAll(); renderAdminList();
+  } catch (e) { toast("Error: " + e.message); }
+}
+
+function renderMovies(list, containerId) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = "";
+  if (list.length === 0) { c.innerHTML = '<p style="color:#888;font-size:13px">Hakuna movies hapa bado.</p>'; return; }
+  const sorted = [...list].sort((a, b) => {
+    if (a.isNew && !b.isNew) return -1;
+    if (!a.isNew && b.isNew) return 1;
+    return (b.year || 0) - (a.year || 0);
+  });
+  sorted.forEach(m => {
+    const isFav = FAVORITES.includes(m.id);
+    const card = document.createElement("div");
+    card.className = "movie-card";
+    card.onclick = (e) => { if (e.target.tagName !== "BUTTON") openPlayer(m); };
+    card.innerHTML = `
+      ${m.isNew ? '<span class="new-badge">MPYA</span>' : ''}
+      <span class="rating-badge">⭐ ${(m.rating || 0).toFixed(1)}</span>
+      <img src="${m.poster}" alt="${m.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/12122b/ffffff?text=ROJAX'"/>
+      <button class="fav-btn" onclick="toggleFav('${m.id}', event)">${isFav ? "❤️" : "🤍"}</button>
+      <div class="info">
+        <h4>${m.title}</h4>
+        <p>${m.year} • ${(m.genre||"").toUpperCase()}</p>
+      </div>`;
+    c.appendChild(card);
+  });
+}
+function renderLive() {
+  const c = document.getElementById("liveGrid");
+  if (!c) return;
+  c.innerHTML = "";
+  if (ROJAX_LIVE.length === 0) { c.innerHTML = '<p style="color:#888;font-size:13px">Hakuna live bado.</p>'; return; }
+  ROJAX_LIVE.forEach(live => {
+    const card = document.createElement("div");
+    card.className = "movie-card";
+    card.onclick = () => openLive(live);
+    card.innerHTML = `
+      <img src="${live.thumbnail}" alt="${live.title}" loading="lazy"/>
+      <div class="info"><h4>🔴 ${live.title}</h4><p>Live Sasa</p></div>`;
+    c.appendChild(card);
+  });
+}
+function renderWatchlist() {
+  const list = ROJAX_MOVIES.filter(m => FAVORITES.includes(m.id));
+  renderMovies(list, "watchlistGrid");
+}
+function renderAll() {
+  renderMovies(ROJAX_MOVIES.filter(m => m.type === "movie"), "movieGrid");
+  renderMovies(ROJAX_MOVIES.filter(m => m.type === "tamthiliya"), "tamthiliyaGrid");
+  renderLive();
+  renderWatchlist();
+  updateAuthUI();
+}
+
+async function toggleFav(id, e) {
+  if (e) e.stopPropagation();
+  if (!CURRENT_USER) return toast("Ingia kwanza");
+  const i = FAVORITES.indexOf(id);
+  if (i >= 0) FAVORITES.splice(i, 1); else FAVORITES.push(id);
+  await saveFavorites();
+  renderAll();
+}
+function toggleFavCurrent() {
+  if (!currentMovie) return;
+  toggleFav(currentMovie.id);
+  document.getElementById("favCurrentBtn").textContent = FAVORITES.includes(currentMovie.id) ? "❤️ Watchlist" : "⭐ Watchlist";
+}
+
+function openPlayer(movie) {
+  currentMovie = movie;
+  const modal = document.getElementById("playerModal");
+  const video = document.getElementById("videoPlayer");
+  document.getElementById("playerTitle").textContent = movie.title;
+  document.getElementById("favCurrentBtn").textContent = FAVORITES.includes(movie.id) ? "❤️ Watchlist" : "⭐ Watchlist";
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+  if (movie.video.endsWith(".m3u8") && Hls.isSupported()) {
+    hlsInstance = new Hls();
+    hlsInstance.loadSource(movie.video);
+    hlsInstance.attachMedia(video);
+  } else { video.src = movie.video; }
+  modal.classList.add("active");
+  video.play().catch(() => {});
+  renderComments(movie.id);
+  renderStars(movie.id);
+}
+function openLive(live) {
+  currentMovie = null;
+  const modal = document.getElementById("playerModal");
+  const video = document.getElementById("videoPlayer");
+  document.getElementById("playerTitle").textContent = "🔴 " + live.title;
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls(); hlsInstance.loadSource(live.channel); hlsInstance.attachMedia(video);
+  } else { video.src = live.channel; }
+  modal.classList.add("active");
+  video.play().catch(() => {});
+  document.getElementById("commentsList").innerHTML = "";
+  document.getElementById("stars").innerHTML = "";
+}
+function closePlayer() {
+  const modal = document.getElementById("playerModal");
+  const video = document.getElementById("videoPlayer");
+  video.pause();
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+  video.src = "";
+  modal.classList.remove("active");
+  currentMovie = null;
+}
+
+function downloadMovie() {
+  if (!currentMovie) return;
+  const q = document.getElementById("qualitySelect").value;
+  const link = document.createElement("a");
+  link.href = currentMovie.download || currentMovie.video;
+  link.download = `${currentMovie.title}_${q}p.mp4`;
+  link.target = "_blank";
+  link.click();
+  toast(`Download — ${q}p`);
+}
+
+function filterMovies(genre, btn) {
+  currentGenre = genre;
+  document.querySelectorAll(".filter-bar button").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  applyAdvancedFilter();
+}
+function applyAdvancedFilter() {
+  const year = document.getElementById("yearFilter").value;
+  const minRating = parseFloat(document.getElementById("ratingFilter").value) || 0;
+  let list = ROJAX_MOVIES.filter(m => m.type === "movie");
+  if (currentGenre === "new") list = list.filter(m => m.isNew);
+  else if (currentGenre !== "all") list = list.filter(m => m.genre === currentGenre);
+  if (year) list = list.filter(m => m.year == year);
+  if (minRating) list = list.filter(m => (m.rating || 0) >= minRating);
+  renderMovies(list, "movieGrid");
+}
+
+document.getElementById("search").addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase();
+  const filtered = ROJAX_MOVIES.filter(m => (m.title||"").toLowerCase().includes(q));
+  renderMovies(filtered.filter(m => m.type === "movie"), "movieGrid");
+  renderMovies(filtered.filter(m => m.type === "tamthiliya"), "tamthiliyaGrid");
+});
+
+function switchTab(tab, btn) {
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(tab + "Tab").classList.add("active");
+}
+
+function renderComments(movieId) {
+  const list = document.getElementById("commentsList");
+  const arr = COMMENTS[movieId] || [];
+  list.innerHTML = arr.length ? "" : '<p style="color:#888;font-size:12px">Hakuna comments bado.</p>';
+  arr.sort((a,b) => (b.time?.seconds||0) - (a.time?.seconds||0)).forEach(c => {
+    const div = document.createElement("div");
+    div.className = "comment-box";
+    const t = c.time?.seconds ? new Date(c.time.seconds*1000).toLocaleString() : "sasa hivi";
+    div.innerHTML = `<div class="meta">${c.username || c.user || "User"} • ${t}</div><div>${escapeHtml(c.text)}</div>`;
+    list.appendChild(div);
+  });
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+async function addComment() {
+  if (!CURRENT_USER) return toast("Ingia kwanza");
+  if (!currentMovie) return;
+  const inp = document.getElementById("commentInput");
+  const text = inp.value.trim();
+  if (!text) return;
+  try {
+    await fb.addDoc(fb.collection(window.rojaxDb, "comments"), {
+      movieId: currentMovie.id, text,
+      user: CURRENT_USER, username: CURRENT_NAME,
+      time: fb.serverTimestamp()
+    });
+    inp.value = "";
+    const snap = await fb.getDocs(fb.query(fb.collection(window.rojaxDb, "comments"), fb.where("movieId","==",currentMovie.id)));
+    COMMENTS[currentMovie.id] = [];
+    snap.forEach(d => COMMENTS[currentMovie.id].push({ id: d.id, ...d.data() }));
+    renderComments(currentMovie.id);
+  } catch (e) { toast("Error: " + e.message); }
+}
+
+function renderStars(movieId) {
+  const arr = RATINGS[movieId] || [];
+  const userRate = arr.find(r => r.user === CURRENT_USER)?.value || 0;
+  const avg = arr.length ? (arr.reduce((a,b)=>a+b.value,0) / arr.length).toFixed(1) : "0.0";
+  document.getElementById("ratingText").textContent = `Wastani: ⭐ ${avg} (${arr.length} votes)`;
+  document.querySelectorAll("#stars span").forEach((s, i) => s.classList.toggle("active", i < userRate));
+}
+async function rate(n) {
+  if (!CURRENT_USER) return toast("Ingia kwanza");
+  if (!currentMovie) return;
+  try {
+    const db = window.rojaxDb;
+    const existing = (RATINGS[currentMovie.id] || []).find(r => r.user === CURRENT_USER);
+    if (existing) {
+      await fb.updateDoc(fb.doc(db, "ratings", existing.id), { value: n });
+    } else {
+      await fb.addDoc(fb.collection(db, "ratings"), { movieId: currentMovie.id, user: CURRENT_USER, value: n });
+    }
+    toast(`Umetoa ⭐ ${n}`);
+    await loadFromFirestore(); renderAll();
+    renderStars(currentMovie.id);
+  } catch (e) { toast("Error: " + e.message); }
+}
+
+function scrollToId(id) { document.getElementById(id).scrollIntoView({ behavior: "smooth" }); }
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closePlayer(); closeAuth(); closeAdmin(); }
+});
+</script>
+</body>
+</html>
